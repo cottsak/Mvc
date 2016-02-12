@@ -683,28 +683,30 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
             if (prefix.Length == 0)
             {
-                // Everything is prefixed by the empty string
+                // Everything is prefixed by the empty string.
                 return true;
             }
 
-            if (key.Length < prefix.Length)
+            if (prefix.Length > key.Length)
+            {
+                return false; // Not long enough.
+            }
+
+            if (!key.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
             {
                 return false;
             }
-
-            if (key.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+            
+            if (key.Length == prefix.Length)
             {
-                if (key.Length == prefix.Length)
-                {
-                    // Exact match
-                    return true;
-                }
+                // Exact match
+                return true;
+            }
 
-                var charAfterPrefix = key[prefix.Length];
-                if (charAfterPrefix == '.' || charAfterPrefix == '[')
-                {
-                    return true;
-                }
+            var charAfterPrefix = key[prefix.Length];
+            if (charAfterPrefix == '.' || charAfterPrefix == '[')
+            {
+                return true;
             }
 
             return false;

@@ -687,7 +687,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         [Theory]
         [InlineData("")]
         [InlineData(null)]
-        public void ClearValidationStateForModel_EmtpyModelKey(string modelKey)
+        public void ClearValidationState_ForComplexTypeModel_EmptyModelKey(string modelKey)
         {
             // Arrange
             var metadataProvider = new EmptyModelMetadataProvider();
@@ -701,6 +701,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             dictionary.AddModelError("Id", "Id is required.");
             dictionary["Category"] = new ModelStateEntry { ValidationState = ModelValidationState.Valid };
 
+            dictionary["Unrelated"] = new ModelStateEntry { ValidationState = ModelValidationState.Invalid };
+            dictionary.AddModelError("Unrelated", "Unrelated is required.");
+
             // Act
             ModelBindingHelper.ClearValidationStateForModel(modelMetadata, dictionary, modelKey);
 
@@ -711,12 +714,43 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             Assert.Equal(ModelValidationState.Unvalidated, dictionary["Id"].ValidationState);
             Assert.Equal(0, dictionary["Category"].Errors.Count);
             Assert.Equal(ModelValidationState.Unvalidated, dictionary["Category"].ValidationState);
+
+            Assert.Equal(1, dictionary["Unrelated"].Errors.Count);
+            Assert.Equal(ModelValidationState.Invalid, dictionary["Unrelated"].ValidationState);
+        }
+
+        // Not a wholly realistic scenario, but testing it regardless.
+        [Theory]
+        [InlineData("")]
+        [InlineData(null)]
+        public void ClearValidationState_ForSimpleTypeModel_EmptyModelKey(string modelKey)
+        {
+            // Arrange
+            var metadataProvider = new EmptyModelMetadataProvider();
+            var modelMetadata = metadataProvider.GetMetadataForType(typeof(string));
+
+            var dictionary = new ModelStateDictionary();
+            dictionary[string.Empty] = new ModelStateEntry { ValidationState = ModelValidationState.Invalid };
+            dictionary.AddModelError(string.Empty, "MyProperty invalid.");
+
+            dictionary["Unrelated"] = new ModelStateEntry { ValidationState = ModelValidationState.Invalid };
+            dictionary.AddModelError("Unrelated", "Unrelated is required.");
+
+            // Act
+            ModelBindingHelper.ClearValidationStateForModel(modelMetadata, dictionary, modelKey);
+
+            // Assert
+            Assert.Equal(0, dictionary[string.Empty].Errors.Count);
+            Assert.Equal(ModelValidationState.Unvalidated, dictionary[string.Empty].ValidationState);
+
+            Assert.Equal(1, dictionary["Unrelated"].Errors.Count);
+            Assert.Equal(ModelValidationState.Invalid, dictionary["Unrelated"].ValidationState);
         }
 
         [Theory]
         [InlineData("")]
         [InlineData(null)]
-        public void ClearValidationStateForCollectionsModel_EmtpyModelKey(string modelKey)
+        public void ClearValidationState_ForCollectionsModel_EmptyModelKey(string modelKey)
         {
             // Arrange
             var metadataProvider = new EmptyModelMetadataProvider();
@@ -735,6 +769,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             dictionary["[1].Category"] = new ModelStateEntry { ValidationState = ModelValidationState.Invalid };
             dictionary.AddModelError("[1].Category", "Category invalid.");
 
+            dictionary["Unrelated"] = new ModelStateEntry { ValidationState = ModelValidationState.Invalid };
+            dictionary.AddModelError("Unrelated", "Unrelated is required.");
+
             // Act
             ModelBindingHelper.ClearValidationStateForModel(modelMetadata, dictionary, modelKey);
 
@@ -751,6 +788,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             Assert.Equal(ModelValidationState.Unvalidated, dictionary["[1].Id"].ValidationState);
             Assert.Equal(0, dictionary["[1].Category"].Errors.Count);
             Assert.Equal(ModelValidationState.Unvalidated, dictionary["[1].Category"].ValidationState);
+
+            Assert.Equal(1, dictionary["Unrelated"].Errors.Count);
+            Assert.Equal(ModelValidationState.Invalid, dictionary["Unrelated"].ValidationState);
         }
 
         [Theory]
@@ -760,7 +800,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         [InlineData("product.Order[0].Address.Street")]
         [InlineData("product.Category.Name")]
         [InlineData("product.Order")]
-        public void ClearValidationStateForModel_NonEmtpyModelKey(string prefix)
+        public void ClearValidationState_ForModel_NonEmtpyModelKey(string prefix)
         {
             // Arrange
             var metadataProvider = new EmptyModelMetadataProvider();

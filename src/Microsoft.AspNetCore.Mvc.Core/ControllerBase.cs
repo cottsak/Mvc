@@ -1434,8 +1434,9 @@ namespace Microsoft.AspNetCore.Mvc
 
             // Clear ModelStateDictionary entries for the model so that it will be re-validated.
             ModelBindingHelper.ClearValidationStateForModel(
-                MetadataProvider.GetMetadataForType(model.GetType()),
+                model.GetType(),
                 ModelState,
+                MetadataProvider,
                 modelName);
 
             ObjectValidator.Validate(
