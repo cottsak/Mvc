@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Html;
@@ -10,9 +11,9 @@ using Microsoft.AspNetCore.Mvc.Internal;
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
 {
     /// <summary>
-    /// <see cref="HtmlTextWriter"/> implementation which writes to an <see cref="IHtmlContentBuilder"/> instance.
+    /// A <see cref="TextWriter"/> implementation which writes to an <see cref="IHtmlContentBuilder"/> instance.
     /// </summary>
-    public class HtmlContentWrapperTextWriter : HtmlTextWriter
+    public class HtmlContentWrapperTextWriter : TextWriter
     {
         private const int MaxCharToStringLength = 1024;
 
@@ -95,15 +96,12 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
             ContentBuilder.Append(value);
         }
 
-        /// <inheritdoc />
-        public override void Write(IHtmlContent value)
+        public override void Write(object value)
         {
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
+            var htmlContent = value as IHtmlContent;
+            if ()
 
-            ContentBuilder.AppendHtml(value);
+            base.Write(value);
         }
 
         /// <inheritdoc />
